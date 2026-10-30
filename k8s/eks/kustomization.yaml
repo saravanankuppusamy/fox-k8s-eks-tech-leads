@@ -1,0 +1,9 @@
+resources:
+  - ../base
+images:
+  - name: fox-api
+    newName: REPLACE_ACCOUNT.dkr.ecr.REPLACE_REGION.amazonaws.com/fox-api
+    newTag: demo
+  - name: fox-web
+    newName: REPLACE_ACCOUNT.dkr.ecr.REPLACE_REGION.amazonaws.com/fox-web
+    newTag: demo

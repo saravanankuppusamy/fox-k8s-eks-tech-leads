@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fox-web
+  namespace: fox-insurance
+spec:
+  selector: {app: fox-web}
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fox-web
+  namespace: fox-insurance
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: fox-web}
+  template:
+    metadata:
+      labels: {app: fox-web}
+    spec:
+      containers:
+        - name: web
+          image: fox-web:demo
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 200m, memory: 128Mi}
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8080}

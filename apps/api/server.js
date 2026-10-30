@@ -1,0 +1,11 @@
+const express=require('express');
+const {MongoClient}=require('mongodb');
+const app=express();app.use(express.json());
+const port=3000;let db;let ready=false;
+const seed={customers:[{id:1,name:'Asha Patel'},{id:2,name:'James Lee'}],policies:[{id:101,customerId:1,type:'Auto',premium:125},{id:102,customerId:2,type:'Home',premium:180}],claims:[{id:501,policyId:101,status:'Under Review'}]};
+app.get('/healthz',(req,res)=>res.json({alive:true}));
+app.get('/ready',(req,res)=>ready?res.json({ready:true}):res.status(503).json({ready:false}));
+app.get('/api',(req,res)=>res.json({app:'Fox Insurance',endpoints:['/api/customers','/api/policies','/api/claims']}));
+for(const collection of Object.keys(seed))app.get('/api/'+collection,async(req,res)=>{try{res.json(await db.collection(collection).find({},{projection:{_id:0}}).toArray())}catch(e){res.status(503).json({error:'Database unavailable'})}});
+app.listen(port,'0.0.0.0',()=>console.log('API listening on',port));
+(async()=>{while(!ready){try{const client=new MongoClient(process.env.MONGO_URL||'mongodb://mongo:27017');await client.connect();db=client.db('foxinsurance');for(const [name,docs] of Object.entries(seed)){const col=db.collection(name);if(await col.countDocuments()===0)await col.insertMany(docs)}ready=true;console.log('MongoDB connected and seeded')}catch(e){console.error('MongoDB not ready:',e.message);await new Promise(resolve=>setTimeout(resolve,3000))}}})();

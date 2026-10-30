@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fox-observer
+  namespace: fox-insurance
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fox-pod-reader
+  namespace: fox-insurance
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fox-observer-read
+  namespace: fox-insurance
+subjects:
+  - kind: ServiceAccount
+    name: fox-observer
+    namespace: fox-insurance
+roleRef:
+  kind: Role
+  name: fox-pod-reader
+  apiGroup: rbac.authorization.k8s.io
